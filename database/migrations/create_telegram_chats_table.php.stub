@@ -1,0 +1,44 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use ItHealer\Telegram\Models\TelegramBot;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('telegram_chats', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(TelegramBot::class, 'bot_id')
+                ->constrained('telegram_bots')
+                ->cascadeOnDelete();
+            $table->string('chat_id');
+            $table->string('username')
+                ->nullable();
+            $table->string('first_name')
+                ->nullable();
+            $table->string('last_name')
+                ->nullable();
+            $table->json('chat_data')
+                ->default('[]');
+            $table->json('visits')
+                ->default('[]');
+            $table->unsignedInteger('live_period')
+                ->nullable();
+            $table->timestamp('live_launch_at')
+                ->nullable();
+            $table->timestamp('live_expire_at')
+                ->nullable();
+
+            $table->timestamps();
+
+            $table->unique(['bot_id', 'chat_id'], 'unique_index');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('telegram_chats');
+    }
+};

@@ -1,0 +1,11 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Route;
+use ItHealer\Telegram\TelegramRequest;
+
+Route::telegram('/', function(TelegramRequest $request) {
+    return '<message><line>You write: '.$request->text().'</line></message>';
+});
+

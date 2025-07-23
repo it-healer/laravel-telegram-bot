@@ -1,0 +1,86 @@
+{
+    "name": "it-healer/laravel-telegram-bot",
+    "description": "A library for convenient creation of Telegram bots by analogy with the creation of Web sites on Laravel.",
+    "keywords": [
+        "it-healer",
+        "php",
+        "laravel",
+        "telegram",
+        "laravel-telegram-bot"
+    ],
+    "homepage": "https://github.com/it-healer/laravel-telegram-bot",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "IT-HEALER",
+            "email": "info@it-healer.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3|^8.4",
+        "ext-dom": "*",
+        "danog/telegram-entities": "^1.0",
+        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0",
+        "spatie/laravel-package-tools": "^1.16",
+        "symfony/dom-crawler": "^6.0|^7.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.14",
+        "nunomaduro/collision": "^8.1.1||^7.10.0",
+        "orchestra/testbench": "^9.0.0||^8.22.0",
+        "pestphp/pest": "^2.34",
+        "pestphp/pest-plugin-arch": "^2.7",
+        "pestphp/pest-plugin-laravel": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "ItHealer\\Telegram\\": "src/",
+            "ItHealer\\Telegram\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ItHealer\\Telegram\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": "@composer run prepare",
+        "clear": "@php vendor/bin/testbench package:purge-laravel-telegram-bot --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": [
+            "@composer run prepare",
+            "@php vendor/bin/testbench workbench:build --ansi"
+        ],
+        "start": [
+            "Composer\\Config::disableProcessTimeout",
+            "@composer run build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ItHealer\\Telegram\\TelegramServiceProvider"
+            ],
+            "aliases": {
+                "Telegram": "ItHealer\\Telegram\\Facades\\Telegram"
+            }
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
