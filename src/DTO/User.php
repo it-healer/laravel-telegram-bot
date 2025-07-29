@@ -31,7 +31,7 @@ class User extends DTO
 
     public function firstName(): string
     {
-        return $this->getOrFail('first_name');
+        return $this->get('first_name') ?: '?';
     }
 
     public function lastName(): ?string
