@@ -11,7 +11,6 @@ class User extends DTO
         return [
             'id',
             'is_bot',
-            'first_name',
         ];
     }
 

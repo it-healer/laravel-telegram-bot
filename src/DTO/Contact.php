@@ -8,7 +8,7 @@ class Contact extends DTO
 {
    protected function required(): array
    {
-       return ['phone_number', 'first_name'];
+       return ['phone_number'];
    }
 
    public function phoneNumber(): string
