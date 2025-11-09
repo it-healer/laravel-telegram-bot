@@ -49,7 +49,7 @@ class TelegramMiddleware
             foreach( config('telegram.reactions', [] ) as $key => $values ) {
                 $has = false;
                 foreach( $values as $value ) {
-                    if( mb_strpos($request->text(), $value) === 0 ) {
+                    if( $request->text() === $value ) {
                         $has = true;
                         break;
                     }
