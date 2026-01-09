@@ -75,8 +75,7 @@ class TelegramRequest extends \Illuminate\Http\Request
                 files: [],
                 server: $server
             );
-        }
-        catch(\Exception) {
+        } catch (\Exception) {
             $request = static::create(
                 uri: '/',
                 method: 'TELEGRAM',
@@ -111,10 +110,10 @@ class TelegramRequest extends \Illuminate\Http\Request
                 if (($item['type'] ?? null) === 'blockquote') {
                     $entities[$i]['type'] = 'block_quote';
                 }
-                if( isset( $item['offset'] ) ) {
+                if (isset($item['offset'])) {
                     $entities[$i]['offset'] = (int)$item['offset'];
                 }
-                if( isset( $item['length'] ) ) {
+                if (isset($item['length'])) {
                     $entities[$i]['length'] = (int)$item['length'];
                 }
             }
@@ -141,11 +140,14 @@ class TelegramRequest extends \Illuminate\Http\Request
         }
 
         $tags = [];
-        if( $replyParameters = $message?->replyParameters() ) {
+        if ($replyParameters = $message?->replyParameters()) {
             $tags[] = 'reply-message-id="'.$replyParameters->messageId().'"';
         }
 
-        $html = $textWithEntities ? '<message '.implode(' ', $tags).'><lines>'.$textWithEntities.'</lines>'.$inlineKeyboardHTML.'</message>' : '';
+        $html = $textWithEntities ? '<message '.implode(
+                ' ',
+                $tags
+            ).'><lines>'.$textWithEntities.'</lines>'.$inlineKeyboardHTML.'</message>' : '';
 
         $photo = null;
         if ($this->message instanceof Message\Photo) {
@@ -159,7 +161,10 @@ class TelegramRequest extends \Illuminate\Http\Request
                 if (($value = $this->message->showCaptionAboveMedia()) !== null) {
                     $tags[] = 'show_caption_above_media="'.($value ? 1 : 0).'"';
                 }
-                $html = '<photo '.implode(' ', $tags).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</photo>';
+                $html = '<photo '.implode(
+                        ' ',
+                        $tags
+                    ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</photo>';
             }
         }
 
@@ -168,7 +173,10 @@ class TelegramRequest extends \Illuminate\Http\Request
             $document = $this->message->document();
             if ($document) {
                 $tags[] = 'src="'.$document->fileId().'"';
-                $html = '<document '.implode(' ', $tags).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</document>';
+                $html = '<document '.implode(
+                        ' ',
+                        $tags
+                    ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</document>';
             }
         }
 
@@ -177,7 +185,10 @@ class TelegramRequest extends \Illuminate\Http\Request
             $voice = $this->message->voiceNote();
             if ($voice) {
                 $tags[] = 'src="'.$voice->fileId().'"';
-                $html = '<voice '.implode(' ', $tags).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</voice>';
+                $html = '<voice '.implode(
+                        ' ',
+                        $tags
+                    ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</voice>';
             }
         }
 
@@ -189,7 +200,10 @@ class TelegramRequest extends \Illuminate\Http\Request
                 if (($value = $this->message->showCaptionAboveMedia()) !== null) {
                     $tags[] = 'show_caption_above_media="'.($value ? 1 : 0).'"';
                 }
-                $html = '<video '.implode(' ', $tags).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</video>';
+                $html = '<video '.implode(
+                        ' ',
+                        $tags
+                    ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</video>';
             }
         }
 
@@ -211,6 +225,15 @@ class TelegramRequest extends \Illuminate\Http\Request
             ->setVoice($voice)
             ->setVideo($video)
             ->setVideoNote($videoNote);
+    }
+
+    public function messageId(): ?int
+    {
+        if ($this->callbackQuery && $this->callbackQuery->message()) {
+            return $this->callbackQuery->message()->id();
+        }
+
+        return $this->message?->id();
     }
 
     public function message(): ?Message
