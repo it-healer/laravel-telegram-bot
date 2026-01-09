@@ -25,27 +25,46 @@ use Symfony\Component\HttpFoundation\InputBag;
 class TelegramRequest extends \Illuminate\Http\Request
 {
     protected TelegramBot $bot;
+
     protected TelegramChat $chat;
+
     protected ?Message $message = null;
+
     protected ?string $text = null;
+
     protected ?Message $replyToMessage = null;
+
     protected ?CallbackQuery $callbackQuery = null;
+
     protected ?PhotoSize $photoSize = null;
+
     protected ?Document $document = null;
+
     protected ?VideoFile $video = null;
+
     protected ?Contact $contact = null;
+
     protected ?VoiceNote $voice = null;
+
     protected ?VideoNoteFile $videoNote = null;
+
     protected ?TelegramAttachment $attachment = null;
+
     protected string $messageHTML = '';
 
     protected ChatAPI $api;
+
     protected Storage $storage;
+
     protected MessageStack $stack;
+
     protected ?array $live = null;
 
     protected ?int $livePeriod = null;
-    protected ?Carbon $liveLaunchAt = null, $liveExpiredAt = null;
+
+    protected ?Carbon $liveLaunchAt = null;
+
+    protected ?Carbon $liveExpiredAt = null;
 
     public static function createFromTelegram(
         TelegramBot $bot,
@@ -101,26 +120,26 @@ class TelegramRequest extends \Illuminate\Http\Request
 
         $text = $this->message?->text();
         $entities = $this->message?->entities();
-        if (!$text && ($this->message instanceof HasCaption)) {
+        if (! $text && ($this->message instanceof HasCaption)) {
             $text = $this->message->caption();
             $entities = $this->message->captionEntities();
         }
 
-        $textWithEntities = !is_null($text) ? htmlspecialchars($text) : null;
+        $textWithEntities = ! is_null($text) ? htmlspecialchars($text) : null;
         if ($text && $entities) {
             foreach ($entities as $i => $item) {
                 if (($item['type'] ?? null) === 'blockquote') {
                     $entities[$i]['type'] = 'block_quote';
                 }
                 if (isset($item['offset'])) {
-                    $entities[$i]['offset'] = (int)$item['offset'];
+                    $entities[$i]['offset'] = (int) $item['offset'];
                 }
                 if (isset($item['length'])) {
-                    $entities[$i]['length'] = (int)$item['length'];
+                    $entities[$i]['length'] = (int) $item['length'];
                 }
             }
             $telegramEntities = new Entities($text, $entities);
-            $textWithEntities = str_replace("<br>", "\n", $telegramEntities->toHTML(true));
+            $textWithEntities = str_replace('<br>', "\n", $telegramEntities->toHTML(true));
         }
 
         $inlineKeyboardHTML = '';
@@ -156,7 +175,7 @@ class TelegramRequest extends \Illuminate\Http\Request
             /** @var ?PhotoSize $photo */
             $photo = $this->message
                 ->photo()
-                ->sortByDesc(fn(PhotoSize $item) => $item->width())
+                ->sortByDesc(fn (PhotoSize $item) => $item->width())
                 ->first();
             if ($photo) {
                 $tags[] = 'src="'.$photo->fileId().'"';
@@ -267,7 +286,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function setVoice(?VoiceNote $voice): static
     {
-        if ($this->voice && !$voice) {
+        if ($this->voice && ! $voice) {
             $this->attachment = null;
         }
 
@@ -298,7 +317,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function setVideoNote(?VideoNoteFile $videoNote): static
     {
-        if ($this->videoNote && !$videoNote) {
+        if ($this->videoNote && ! $videoNote) {
             $this->attachment = null;
         }
 
@@ -324,7 +343,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function setVideo(?VideoFile $video): static
     {
-        if ($this->video && !$video) {
+        if ($this->video && ! $video) {
             $this->attachment = null;
         }
 
@@ -345,7 +364,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function setDocument(?Document $document): static
     {
-        if ($this->document && !$document) {
+        if ($this->document && ! $document) {
             $this->attachment = null;
         }
 
@@ -371,7 +390,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function setPhoto(?PhotoSize $photoSize): static
     {
-        if ($this->photoSize && !$photoSize) {
+        if ($this->photoSize && ! $photoSize) {
             $this->attachment = null;
         }
 
@@ -449,6 +468,102 @@ class TelegramRequest extends \Illuminate\Http\Request
         return $this->messageHTML;
     }
 
+    /**
+     * Возвращает HTML для отображения на веб-сайте
+     */
+    public function webHTML(): string
+    {
+        $html = '';
+
+        // Обработка медиа файлов
+        if ($this->photoSize) {
+            try {
+                $fileUrl = $this->bot->api()->getFileLink($this->photoSize);
+                $html .= '<p><img src="'.htmlspecialchars($fileUrl).'" alt="" /></p>';
+            } catch (\Exception $e) {
+                Log::error('Failed to get photo file link: '.$e->getMessage());
+            }
+        } elseif ($this->video) {
+            try {
+                $fileUrl = $this->bot->api()->getFileLink($this->video);
+                $html .= '<p><video src="'.htmlspecialchars($fileUrl).'" controls></video></p>';
+            } catch (\Exception $e) {
+                Log::error('Failed to get video file link: '.$e->getMessage());
+            }
+        } elseif ($this->document) {
+            try {
+                $fileUrl = $this->bot->api()->getFileLink($this->document);
+                $fileName = $this->document->fileName() ?? 'Document';
+                $html .= '<p><a href="'.htmlspecialchars($fileUrl).'" download>'.htmlspecialchars($fileName).'</a></p>';
+            } catch (\Exception $e) {
+                Log::error('Failed to get document file link: '.$e->getMessage());
+            }
+        } elseif ($this->voice) {
+            try {
+                $fileUrl = $this->bot->api()->getFileLink($this->voice);
+                $html .= '<p><audio src="'.htmlspecialchars($fileUrl).'" controls></audio></p>';
+            } catch (\Exception $e) {
+                Log::error('Failed to get voice file link: '.$e->getMessage());
+            }
+        } elseif ($this->videoNote) {
+            try {
+                $fileUrl = $this->bot->api()->getFileLink($this->videoNote);
+                $html .= '<p><video src="'.htmlspecialchars($fileUrl).'" controls></video></p>';
+            } catch (\Exception $e) {
+                Log::error('Failed to get video note file link: '.$e->getMessage());
+            }
+        }
+
+        // Получение текста и entities
+        $text = $this->message?->text();
+        $entities = $this->message?->entities();
+
+        if (! $text && ($this->message instanceof HasCaption)) {
+            $text = $this->message->caption();
+            $entities = $this->message->captionEntities();
+        }
+
+        // Преобразование entities в HTML
+        if ($text) {
+            $textHtml = htmlspecialchars($text);
+
+            if ($entities) {
+                // Нормализация entities
+                foreach ($entities as $i => $item) {
+                    if (($item['type'] ?? null) === 'blockquote') {
+                        $entities[$i]['type'] = 'block_quote';
+                    }
+                    if (isset($item['offset'])) {
+                        $entities[$i]['offset'] = (int) $item['offset'];
+                    }
+                    if (isset($item['length'])) {
+                        $entities[$i]['length'] = (int) $item['length'];
+                    }
+                }
+
+                try {
+                    $telegramEntities = new Entities($text, $entities);
+                    $textHtml = $telegramEntities->toHTML(true);
+
+                    // Библиотека danog/TelegramEntities возвращает HTML с <br> для переносов строк
+                    // Оставляем как есть и оборачиваем в <p>
+                    $textHtml = '<p>'.$textHtml.'</p>';
+                } catch (\Exception $e) {
+                    Log::error('Failed to parse telegram entities: '.$e->getMessage());
+                    // Если не удалось распарсить, заменяем переносы строк на <br>
+                    $textHtml = '<p>'.nl2br($textHtml).'</p>';
+                }
+            } else {
+                // Если нет entities, заменяем переносы строк на <br> и оборачиваем в <p>
+                $textHtml = '<p>'.nl2br($textHtml).'</p>';
+            }
+
+            $html .= $textHtml;
+        }
+
+        return $html;
+    }
+
     public function setText(?string $text): static
     {
         $this->text = $text;
@@ -473,7 +588,7 @@ class TelegramRequest extends \Illuminate\Http\Request
 
     public function hasText(): bool
     {
-        return !empty($this->text);
+        return ! empty($this->text);
     }
 
     public function text(): ?string
