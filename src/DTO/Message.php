@@ -122,6 +122,13 @@ class Message extends DTO
         ) : null;
     }
 
+    public function replyToMessage(): ?Message
+    {
+        $replyToMessage = $this->get('reply_to_message');
+
+        return $replyToMessage ? Message::fromArray($replyToMessage) : null;
+    }
+
     public function setReplyParameters(?ReplyParameters $replyParameters): static
     {
         $this->attributes['reply_parameters'] = $replyParameters->toArray();

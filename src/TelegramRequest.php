@@ -28,6 +28,7 @@ class TelegramRequest extends \Illuminate\Http\Request
     protected TelegramChat $chat;
     protected ?Message $message = null;
     protected ?string $text = null;
+    protected ?Message $replyToMessage = null;
     protected ?CallbackQuery $callbackQuery = null;
     protected ?PhotoSize $photoSize = null;
     protected ?Document $document = null;
@@ -96,6 +97,7 @@ class TelegramRequest extends \Illuminate\Http\Request
     public function setMessage(?Message $message): static
     {
         $this->message = $message;
+        $this->replyToMessage = $this->message?->replyToMessage();
 
         $text = $this->message?->text();
         $entities = $this->message?->entities();
@@ -239,6 +241,11 @@ class TelegramRequest extends \Illuminate\Http\Request
     public function message(): ?Message
     {
         return $this->message;
+    }
+
+    public function replyToMessage(): ?Message
+    {
+        return $this->replyToMessage;
     }
 
     public function attachment(): ?TelegramAttachment
