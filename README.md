@@ -5,7 +5,7 @@
 
 This package for Laravel 11+ allows you to easily create interactive Telegram bots, using Laravel routing, and using Blade templates to conduct a dialogue with the user.
 
-Supports Laravel 11, 12 and 13, PHP 8.3 and 8.4.
+Supports Laravel 11, 12 and 13, PHP 8.3, 8.4 and 8.5.
 
 ## Installation
 

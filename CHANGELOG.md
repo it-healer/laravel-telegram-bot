@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-telegram-bot` will be documented in this file.
 
+## v1.3.1 - 2026-06-17
+
+- Allow PHP 8.5 (`php: ^8.3|^8.4|^8.5`).
+
 ## v1.3.0 - 2026-06-17
 
 - Add support for colored keyboard buttons (Telegram Bot API 9.4): the `style` attribute on inline/reply `<column>` tags and `setStyle()` on the button DTOs (`primary`, `success`, `danger`). Invalid values throw an `InvalidArgumentException`.
