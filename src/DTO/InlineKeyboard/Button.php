@@ -3,9 +3,12 @@
 namespace ItHealer\Telegram\DTO\InlineKeyboard;
 
 use ItHealer\Telegram\Abstract\DTO;
+use ItHealer\Telegram\DTO\Concerns\HasButtonStyle;
 
 class Button extends DTO
 {
+    use HasButtonStyle;
+
     public function required(): array
     {
         return ['text', 'callback_data'];

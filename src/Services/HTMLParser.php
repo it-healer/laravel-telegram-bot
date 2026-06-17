@@ -4,7 +4,6 @@ namespace ItHealer\Telegram\Services;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use ItHealer\Telegram\DTO\InlineKeyboard;
 use ItHealer\Telegram\DTO\Message;
 use ItHealer\Telegram\DTO\Message\Document;
@@ -14,15 +13,15 @@ use ItHealer\Telegram\DTO\Message\VideoNote;
 use ItHealer\Telegram\DTO\Message\Voice;
 use ItHealer\Telegram\DTO\ReplyKeyboard;
 use ItHealer\Telegram\DTO\ReplyParameters;
-use ItHealer\Telegram\DTO\VoiceNote;
 use Symfony\Component\DomCrawler\Crawler;
-
 
 readonly class HTMLParser
 {
     protected Crawler $crawler;
+
     /** @var Collection<Message> */
     public Collection $screenMessages;
+
     /** @var Collection<Message> */
     public Collection $appendMessages;
 
@@ -47,7 +46,7 @@ readonly class HTMLParser
     {
         $this->crawler
             ->filter('message, photo, video, document, voice, video-note')
-            ->each(fn(Crawler $item) => match ($item->nodeName()) {
+            ->each(fn (Crawler $item) => match ($item->nodeName()) {
                 'message' => $this->createMessage($item),
                 'photo' => $this->createPhoto($item),
                 'video' => $this->createVideo($item),
@@ -134,7 +133,7 @@ readonly class HTMLParser
             $photo->setPhotoSrc($src);
         }
 
-        if( $show_caption_above_media = $crawler->attr('show_caption_above_media') ) {
+        if ($show_caption_above_media = $crawler->attr('show_caption_above_media')) {
             $photo->setShowCaptionAboveMedia(
                 boolval($show_caption_above_media)
             );
@@ -203,7 +202,7 @@ readonly class HTMLParser
             $video->setVideoSrc($src);
         }
 
-        if( $show_caption_above_media = $crawler->attr('show_caption_above_media') ) {
+        if ($show_caption_above_media = $crawler->attr('show_caption_above_media')) {
             $video->setShowCaptionAboveMedia(
                 boolval($show_caption_above_media)
             );
@@ -430,8 +429,8 @@ readonly class HTMLParser
     {
         $replyKeyboard = ReplyKeyboard::make();
 
-        $replyKeyboard->setResize(!!$crawler->attr('resize', true));
-        $replyKeyboard->setIsPersistent(!!$crawler->attr('persistent', true));
+        $replyKeyboard->setResize((bool) $crawler->attr('resize', true));
+        $replyKeyboard->setIsPersistent((bool) $crawler->attr('persistent', true));
 
         $crawler
             ->filter('row')
@@ -453,6 +452,12 @@ readonly class HTMLParser
                         if ($webApp = $crawler->attr('web_app', '')) {
                             $button->setWebApp(['url' => $webApp]);
                         }
+                        if ($style = $crawler->attr('style')) {
+                            $button->setStyle($style);
+                        }
+                        if ($icon = $crawler->attr('icon')) {
+                            $button->setIconCustomEmojiId($icon);
+                        }
                         $replyKeyboard->button(
                             $button,
                             $rowIndex
@@ -460,7 +465,7 @@ readonly class HTMLParser
                     });
             });
 
-        return !$replyKeyboard->isEmpty() ? $replyKeyboard : null;
+        return ! $replyKeyboard->isEmpty() ? $replyKeyboard : null;
     }
 
     protected function inlineKeyboard(Crawler $crawler): ?InlineKeyboard
@@ -490,47 +495,37 @@ readonly class HTMLParser
                         if ($crawler->attr('encode', isset($callbackData['redirect']))) {
                             $data = http_build_query($callbackData);
                             $encodeId = md5($data);
-                            Cache::set('telegram_'.$encodeId, $data, (int)config('telegram.cache.encode_ttl', 3600));
-                            $callbackData = ['encode' => $encodeId,];
+                            Cache::set('telegram_'.$encodeId, $data, (int) config('telegram.cache.encode_ttl', 3600));
+                            $callbackData = ['encode' => $encodeId];
                         }
 
+                        $button = InlineKeyboard\Button::make()
+                            ->setText(
+                                trim(
+                                    str_replace("\n", '', $crawler->html())
+                                )
+                            );
+
                         if ($url = $crawler->attr('url')) {
-                            $inlineKeyboard->button(
-                                InlineKeyboard\Button::make()
-                                    ->setText(
-                                        trim(
-                                            str_replace("\n", '', $crawler->html())
-                                        )
-                                    )
-                                    ->setUrl($url),
-                                $rowIndex
-                            );
-                        } elseif ($url = $crawler->attr('web_app')) {
-                            $inlineKeyboard->button(
-                                InlineKeyboard\Button::make()
-                                    ->setText(
-                                        trim(
-                                            str_replace("\n", '', $crawler->html())
-                                        )
-                                    )
-                                    ->setWebApp(['url' => $url]),
-                                $rowIndex
-                            );
+                            $button->setUrl($url);
+                        } elseif ($webApp = $crawler->attr('web_app')) {
+                            $button->setWebApp(['url' => $webApp]);
                         } else {
-                            $inlineKeyboard->button(
-                                InlineKeyboard\Button::make()
-                                    ->setText(
-                                        trim(
-                                            str_replace("\n", '', $crawler->html())
-                                        )
-                                    )
-                                    ->setCallbackData($callbackData),
-                                $rowIndex
-                            );
+                            $button->setCallbackData($callbackData);
                         }
+
+                        if ($style = $crawler->attr('style')) {
+                            $button->setStyle($style);
+                        }
+
+                        if ($icon = $crawler->attr('icon')) {
+                            $button->setIconCustomEmojiId($icon);
+                        }
+
+                        $inlineKeyboard->button($button, $rowIndex);
                     });
             });
 
-        return !$inlineKeyboard->isEmpty() ? $inlineKeyboard : null;
+        return ! $inlineKeyboard->isEmpty() ? $inlineKeyboard : null;
     }
 }

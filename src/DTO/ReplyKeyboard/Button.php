@@ -3,9 +3,12 @@
 namespace ItHealer\Telegram\DTO\ReplyKeyboard;
 
 use ItHealer\Telegram\Abstract\DTO;
+use ItHealer\Telegram\DTO\Concerns\HasButtonStyle;
 
 class Button extends DTO
 {
+    use HasButtonStyle;
+
     public function required(): array
     {
         return ['text'];
@@ -25,7 +28,7 @@ class Button extends DTO
 
     public function requestContact(): bool
     {
-        return !!$this->get('request_contact', false);
+        return (bool) $this->get('request_contact', false);
     }
 
     public function setRequestContact(bool $requestContact): static
@@ -37,7 +40,7 @@ class Button extends DTO
 
     public function requestLocation(): bool
     {
-        return !!$this->get('request_location', false);
+        return (bool) $this->get('request_location', false);
     }
 
     public function setRequestLocation(bool $requestLocation): static
