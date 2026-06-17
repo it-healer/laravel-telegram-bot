@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ItHealer\Telegram;
 
-use danog\TelegramEntities\Entities;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
@@ -20,9 +20,10 @@ use ItHealer\Telegram\Interfaces\HasCaption;
 use ItHealer\Telegram\Models\TelegramAttachment;
 use ItHealer\Telegram\Models\TelegramBot;
 use ItHealer\Telegram\Models\TelegramChat;
+use ItHealer\Telegram\Support\Entities\Entities;
 use Symfony\Component\HttpFoundation\InputBag;
 
-class TelegramRequest extends \Illuminate\Http\Request
+class TelegramRequest extends Request
 {
     protected TelegramBot $bot;
 
@@ -144,16 +145,16 @@ class TelegramRequest extends \Illuminate\Http\Request
 
         $inlineKeyboardHTML = '';
         if (($inlineKeyboard = $message?->inlineKeyboard()?->toArray()) && count(
-                $inlineKeyboard['inline_keyboard'] ?? []
-            ) > 0) {
+            $inlineKeyboard['inline_keyboard'] ?? []
+        ) > 0) {
             $inlineKeyboard = $inlineKeyboard['inline_keyboard'];
             $inlineKeyboardHTML = '<inline-keyboard>';
             foreach ($inlineKeyboard as $columns) {
                 $inlineKeyboardHTML .= '<row>';
                 foreach (is_array($columns) ? $columns : [$columns] as $column) {
                     $inlineKeyboardHTML .= '<column url="'.($column['url'] ?? config(
-                            'app.url'
-                        )).'">'.($column['text'] ?? print_r($column, true)).'</column>';
+                        'app.url'
+                    )).'">'.($column['text'] ?? print_r($column, true)).'</column>';
                 }
                 $inlineKeyboardHTML .= '</row>';
             }
@@ -166,9 +167,9 @@ class TelegramRequest extends \Illuminate\Http\Request
         }
 
         $html = $textWithEntities ? '<message '.implode(
-                ' ',
-                $tags
-            ).'><lines>'.$textWithEntities.'</lines>'.$inlineKeyboardHTML.'</message>' : '';
+            ' ',
+            $tags
+        ).'><lines>'.$textWithEntities.'</lines>'.$inlineKeyboardHTML.'</message>' : '';
 
         $photo = null;
         if ($this->message instanceof Message\Photo) {
@@ -183,9 +184,9 @@ class TelegramRequest extends \Illuminate\Http\Request
                     $tags[] = 'show_caption_above_media="'.($value ? 1 : 0).'"';
                 }
                 $html = '<photo '.implode(
-                        ' ',
-                        $tags
-                    ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</photo>';
+                    ' ',
+                    $tags
+                ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</photo>';
             }
         }
 
@@ -195,9 +196,9 @@ class TelegramRequest extends \Illuminate\Http\Request
             if ($document) {
                 $tags[] = 'src="'.$document->fileId().'"';
                 $html = '<document '.implode(
-                        ' ',
-                        $tags
-                    ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</document>';
+                    ' ',
+                    $tags
+                ).'>'.($textWithEntities ? '<lines>'.$textWithEntities.'</lines>' : '').$inlineKeyboardHTML.'</document>';
             }
         }
 
@@ -207,9 +208,9 @@ class TelegramRequest extends \Illuminate\Http\Request
             if ($voice) {
                 $tags[] = 'src="'.$voice->fileId().'"';
                 $html = '<voice '.implode(
-                        ' ',
-                        $tags
-                    ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</voice>';
+                    ' ',
+                    $tags
+                ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</voice>';
             }
         }
 
@@ -222,9 +223,9 @@ class TelegramRequest extends \Illuminate\Http\Request
                     $tags[] = 'show_caption_above_media="'.($value ? 1 : 0).'"';
                 }
                 $html = '<video '.implode(
-                        ' ',
-                        $tags
-                    ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</video>';
+                    ' ',
+                    $tags
+                ).'>'.($textWithEntities ? '<line>'.$textWithEntities.'</line>' : '').$inlineKeyboardHTML.'</video>';
             }
         }
 
@@ -545,7 +546,7 @@ class TelegramRequest extends \Illuminate\Http\Request
                     $telegramEntities = new Entities($text, $entities);
                     $textHtml = $telegramEntities->toHTML(true);
 
-                    // Библиотека danog/TelegramEntities возвращает HTML с <br> для переносов строк
+                    // Entities возвращает HTML с <br> для переносов строк
                     // Оставляем как есть и оборачиваем в <p>
                     $textHtml = '<p>'.$textHtml.'</p>';
                 } catch (\Exception $e) {
