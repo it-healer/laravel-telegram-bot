@@ -2,7 +2,7 @@
 
 namespace ItHealer\Telegram\DTO;
 
-use Illuminate\Support\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Date;
 use ItHealer\Telegram\Abstract\DTO;
 use ItHealer\Telegram\DTO\Message\Document;
@@ -64,7 +64,7 @@ class Message extends DTO
         return Direction::OUT;
     }
 
-    public function date(): Carbon
+    public function date(): CarbonInterface
     {
         return Date::createFromTimestampUTC(
             $this->getOrFail('date')

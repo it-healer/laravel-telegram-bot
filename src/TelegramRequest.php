@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ItHealer\Telegram;
 
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Log;
 use ItHealer\Telegram\DTO\CallbackQuery;
@@ -63,9 +63,9 @@ class TelegramRequest extends Request
 
     protected ?int $livePeriod = null;
 
-    protected ?Carbon $liveLaunchAt = null;
+    protected ?CarbonInterface $liveLaunchAt = null;
 
-    protected ?Carbon $liveExpiredAt = null;
+    protected ?CarbonInterface $liveExpiredAt = null;
 
     public static function createFromTelegram(
         TelegramBot $bot,
@@ -611,12 +611,12 @@ class TelegramRequest extends Request
         return $this->livePeriod;
     }
 
-    public function liveLaunchAt(): ?Carbon
+    public function liveLaunchAt(): ?CarbonInterface
     {
         return $this->liveLaunchAt;
     }
 
-    public function liveExpireAt(): ?Carbon
+    public function liveExpireAt(): ?CarbonInterface
     {
         return $this->liveExpiredAt;
     }
